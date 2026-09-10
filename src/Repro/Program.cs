@@ -48,6 +48,11 @@ internal static class Program
         Console.WriteLine($"  PUT  {Compact(sent)}");
         await PutAsync($"{RulePath}?api-version=2024-01-01", sent);
 
+        // A subscription is born with a $Default TrueFilter rule. Left in place, every message matches
+        // through it whatever else is defined — so remove it, exactly as you would against Azure when
+        // replacing the default with a filter of your own.
+        await DeleteAsync($"{DefaultRulePath}?api-version=2024-01-01");
+
         var stored = await GetAsync($"{RulePath}?api-version=2024-01-01");
         var properties = JsonNode.Parse(stored)?["properties"];
         Console.WriteLine($"  GET  {Compact(properties?.ToJsonString() ?? "null")}");
@@ -135,6 +140,9 @@ internal static class Program
     private static string RulePath =>
         $"{NamespacePath}/topics/{Topic}/subscriptions/{Subscription}/rules/only-wanted";
 
+    private static string DefaultRulePath =>
+        $"{NamespacePath}/topics/{Topic}/subscriptions/{Subscription}/rules/" + "$Default";
+
     private static async Task AuthenticateAsync()
     {
         var response = await Http.PostAsync($"{Arm}/{TenantId}/oauth2/v2.0/token",
@@ -158,6 +166,12 @@ internal static class Program
         {
             Expect($"PUT {path.Split('/').Last()}", false, $"HTTP {(int)response.StatusCode}");
         }
+    }
+
+    private static async Task DeleteAsync(string path)
+    {
+        var response = await Http.DeleteAsync($"{Arm}{path}");
+        Console.WriteLine($"  DEL  default rule → HTTP {(int)response.StatusCode}");
     }
 
     private static async Task<string> GetAsync(string path) =>

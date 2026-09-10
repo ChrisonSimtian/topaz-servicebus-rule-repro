@@ -66,6 +66,21 @@ Defect 1 — a rule does not keep its filter
   FAIL  the filter definition survives the round trip
 ```
 
+### Verified end to end
+
+With [TheCloudTheory/Topaz#313](https://github.com/TheCloudTheory/Topaz/pull/313) applied, this repro
+passes in full — the filter round-trips *and* the topic routes:
+
+```
+sent     : Wanted, Unwanted
+received : Wanted
+PASS  only Wanted is delivered
+```
+
+Note the repro deletes the subscription''s `$Default` TrueFilter before sending. A subscription is created
+with one, and while it is present every message matches through it regardless of any filter you add — the
+same as Azure.
+
 ### The data-plane half needs the certificate trusted
 
 The routing check sends two messages and expects only the matching one back. It connects over AMQP, and the
