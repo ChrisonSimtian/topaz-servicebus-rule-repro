@@ -1,0 +1,23 @@
+services:
+  topaz:
+    image: thecloudtheory/topaz-host:nightly
+    container_name: topaz-sb-repro
+    platform: linux/amd64
+    # Topaz binds 443 internally for the HTTPS data planes. A rootless container user cannot bind below
+    # 1024, so drop the floor rather than run as root.
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    ports:
+      - "8899:8899"   # ARM / Resource Manager — the control plane this repro drives
+      - "5671:5671"   # Service Bus AMQP — the endpoint listKeys hands to clients
+    command:
+      - --certificate-file
+      - /certs/topaz.crt
+      - --certificate-key
+      - /certs/topaz.key
+      - --default-subscription
+      - 11111111-1111-1111-1111-111111111111
+      - --log-level
+      - Information
+    volumes:
+      - ./certs:/certs:ro
