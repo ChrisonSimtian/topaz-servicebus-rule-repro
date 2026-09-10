@@ -77,7 +77,7 @@ received : Wanted
 PASS  only Wanted is delivered
 ```
 
-Note the repro deletes the subscription''s `$Default` TrueFilter before sending. A subscription is created
+Note the repro deletes the subscription's `$Default` TrueFilter before sending. A subscription is created
 with one, and while it is present every message matches through it regardless of any filter you add — the
 same as Azure.
 
